@@ -30,7 +30,7 @@ const RegisterForm = () => {
     const {
         register,
         handleSubmit,
-        formState: { errors, isSubmitting, isDirty, isValid },
+        formState: { errors },
     } = useForm<Inputs>({
         resolver: zodResolver(registerSchema)
     });
@@ -91,9 +91,9 @@ const RegisterForm = () => {
                         <select id="countries" className="p-3 rounded-xl border w-full"
                             {...register("role")}
                         >
-                            <option >Role</option>
-                            <option defaultValue="user">User</option>
-                            <option value="seller">Seller</option>
+                            <option value="" >Select Role</option>
+                            <option defaultValue="user">user</option>
+                            <option value="seller">seller</option>
 
                         </select>
                         {errors.role &&
@@ -106,7 +106,6 @@ const RegisterForm = () => {
                         }
                         <button
                             type='submit'
-                            disabled={!isDirty || !isValid || isSubmitting}
                             className="bg-[#002D74] rounded-xl text-white py-2 hover:scale-105 duration-300 cursor-pointer"
                         >
                             Register
