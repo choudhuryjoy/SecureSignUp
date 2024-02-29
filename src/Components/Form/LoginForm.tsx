@@ -1,11 +1,42 @@
-import Image from 'next/image'
-import loginImage from '../../../public/login.jpg'
-import Google from '../icon/Google'
-import Eye from '../icon/Eye'
-import SlashEye from '../icon/SlashEye'
+"use client";
 
+import { useRouter } from 'next/navigation';
+import { useForm, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { userSchema } from '@/Schema/userSchema';
+import { useState } from "react";
+import Image from 'next/image';
+import loginImage from '../../../public/login.jpg';
+import Google from '../icon/Google';
+import Eye from '../icon/Eye';
+import SlashEye from '../icon/SlashEye';
+
+type Inputs = {
+    email: string;
+    password: string;
+}
 
 const LoginForm = () => {
+    const router = useRouter();
+    const [showPassword, setShowPassword] = useState(false);
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isSubmitting, isDirty, isValid },
+    } = useForm<Inputs>({
+        resolver: zodResolver(userSchema)
+    });
+
+    const onSubmit: SubmitHandler<Inputs> = (data) => {
+        console.log(data);
+        router.push('/');
+    }
+
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
     return (
         <div className="bg-gray-50 min-h-screen flex items-center justify-center">
             <div className="bg-gray-100 flex rounded-2xl shadow-lg max-w-3xl p-5 items-center">
@@ -13,14 +44,37 @@ const LoginForm = () => {
                     <h2 className="font-bold text-2xl text-[#002D74]">Login</h2>
                     <p className="text-xs mt-4 text-[#002D74]">If you are already a member, easily log in</p>
 
-                    <form action="" className="flex flex-col gap-4">
-                        <input className="p-2 mt-8 rounded-xl border" type="email" name="email" placeholder="Email" />
+                    <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
+                        <input className="p-2 mt-8 rounded-xl border" type="email" placeholder="Email" {...register("email")} />
+                        {errors.email &&
+                            <div className="flex items-center text-sm text-red-800" role="alert">
+                                <span className="sr-only">Info</span>
+                                <div>
+                                    <span className="font-medium">{errors.email.message}!</span>
+                                </div>
+                            </div>
+                        }
                         <div className="relative">
-                            <input className="p-2 rounded-xl border w-full" type="password" name="password" placeholder="Password" />
-                            {/* <Eye /> */}
-                            <SlashEye />
+                            <input className="p-2 rounded-xl border w-full" placeholder="Password" type={showPassword ? "text" : "password"} {...register("password")} />
+                            <div className="cursor-pointer" onClick={togglePasswordVisibility}>
+                                {showPassword ? <SlashEye /> : <Eye />}
+                            </div>
                         </div>
-                        <button className="bg-[#002D74] rounded-xl text-white py-2 hover:scale-105 duration-300">Login</button>
+                        {errors.password &&
+                            <div className="flex items-center text-sm text-red-800" role="alert">
+                                <span className="sr-only">Info</span>
+                                <div>
+                                    <span className="font-medium">{errors.password.message}!</span>
+                                </div>
+                            </div>
+                        }
+                        <button
+                            type='submit'
+                            disabled={!isDirty || !isValid || isSubmitting}
+                            className="bg-[#002D74] rounded-xl text-white py-2 hover:scale-105 duration-300 cursor-pointer"
+                        >
+                            login
+                        </button>
                     </form>
 
                     <div className="mt-6 grid grid-cols-3 items-center text-gray-400">
@@ -53,7 +107,7 @@ const LoginForm = () => {
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
-export default LoginForm
+export default LoginForm;
