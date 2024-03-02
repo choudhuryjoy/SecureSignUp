@@ -5,11 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from '@/Schema/loginSchema';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 
 import Image from 'next/image';
 import loginImage from '../../../public/login.jpg';
 import { Google, Eye, SlashEye } from '../icon';
+import { FormError } from '../form-error';
+import { FormSuccess } from '../form-success';
+import { login } from '../../../actions/login';
 
 type Inputs = {
   email: string;
@@ -18,6 +21,10 @@ type Inputs = {
 
 const LoginForm = () => {
   const router = useRouter();
+
+  const [error, setError] = useState<string | undefined>("")
+  const [success, setSuccess] = useState<string | undefined>("")
+  const [isPending, startTransition] = useTransition()
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -29,7 +36,15 @@ const LoginForm = () => {
   });
 
   const onSubmit: SubmitHandler<Inputs> = (data) => {
-    console.log(data);
+    setError("")
+    setSuccess("")
+    startTransition(() => {
+      login(data)
+        .then((val) => {
+          setError(val.error);
+          setSuccess(val.success);
+        })
+    })
     // router.push('/');
   };
 
@@ -52,6 +67,7 @@ const LoginForm = () => {
               type="email"
               placeholder="Email"
               {...register('email')}
+              disabled={isPending}
             />
             {errors.email && (
               <div className="flex items-center text-sm text-red-800" role="alert">
@@ -67,6 +83,7 @@ const LoginForm = () => {
                 placeholder="Password"
                 type={showPassword ? 'text' : 'password'}
                 {...register('password')}
+                disabled={isPending}
               />
               <div className="cursor-pointer" onClick={togglePasswordVisibility}>
                 {showPassword ? <SlashEye /> : <Eye />}
@@ -80,6 +97,8 @@ const LoginForm = () => {
                 </div>
               </div>
             )}
+            <FormError message={error} />
+            <FormSuccess message={success} />
             <button
               type="submit"
               className="bg-[#002D74] rounded-xl text-white py-2 hover:scale-105 duration-300 cursor-pointer"
