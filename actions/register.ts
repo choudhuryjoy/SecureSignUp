@@ -1,15 +1,38 @@
 "use server";
 
 import * as z from "zod";
+import bcrypt from "bcrypt";
+import db from "@/lib/db";
 
 import { registerSchema } from "@/Schema/registerSchema";
+import { getUserByEmail } from "../data/user";
 
-export const register = async (values: z.infer<typeof registerSchema>) => {
+export const registerForm = async (values: z.infer<typeof registerSchema>) => {
+  console.log(values);
   const validateFields = registerSchema.safeParse(values);
 
   if (!validateFields.success) {
     return { error: "Invalid fields!" };
   }
+  const { email, password, name } = values;
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(password, salt);
+
+  const isUser = await getUserByEmail(email);
+
+  if (isUser) {
+    return { error: "Email alreday in use" };
+  }
+
+  const user = await db.user.create({
+    data: {
+      email,
+      name,
+      password: hash,
+    },
+  });
+
+  // send verification token email
 
   return { success: "Email sent!" };
 };

@@ -4,10 +4,13 @@ import { useRouter } from 'next/navigation';
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema } from '@/Schema/registerSchema';
+import { registerForm } from '../../../actions/register'
 import { useState } from "react";
 import Image from 'next/image';
 import loginImage from '../../../public/login.jpg';
-import Google from '../icon/Google';
+import { Google, Eye, SlashEye } from '../icon';
+import { FormError } from '../form-error';
+import { FormSuccess } from '../form-success';
 
 
 enum roleEnum {
@@ -26,6 +29,8 @@ type Inputs = {
 const RegisterForm = () => {
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState<string | undefined>("")
+    const [success, setSuccess] = useState<string | undefined>("")
 
     const {
         register,
@@ -34,9 +39,15 @@ const RegisterForm = () => {
     } = useForm<Inputs>({
         resolver: zodResolver(registerSchema)
     });
+
     const onSubmit: SubmitHandler<Inputs> = (data) => {
-        console.log(data);
-        console.log(errors);
+        setError("")
+        setSuccess("")
+        registerForm(data)
+            .then((val) => {
+                setError(val.error);
+                setSuccess(val.success);
+            });
         router.push('/');
     }
 
@@ -70,7 +81,18 @@ const RegisterForm = () => {
                                 </div>
                             </div>
                         }
-                        <input className="p-2 rounded-xl border w-full" placeholder="Password" type={showPassword ? "text" : "password"} {...register("password")} />
+
+                        <div className="relative">
+                            <input
+                                className="p-2 rounded-xl border w-full"
+                                placeholder="Password"
+                                type={showPassword ? 'text' : 'password'}
+                                {...register('password')}
+                            />
+                            <div className="cursor-pointer" onClick={togglePasswordVisibility}>
+                                {showPassword ? <SlashEye /> : <Eye />}
+                            </div>
+                        </div>
                         {errors.password &&
                             <div className="flex items-center text-sm text-red-800" role="alert">
                                 <span className="sr-only">Info</span>
@@ -104,6 +126,9 @@ const RegisterForm = () => {
                                 </div>
                             </div>
                         }
+
+                        <FormError message={error} />
+                        <FormSuccess message={success} />
                         <button
                             type='submit'
                             className="bg-[#002D74] rounded-xl text-white py-2 hover:scale-105 duration-300 cursor-pointer"
