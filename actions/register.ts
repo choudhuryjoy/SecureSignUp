@@ -1,7 +1,7 @@
 "use server";
 
 import * as z from "zod";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import db from "@/lib/db";
 
 import { registerSchema } from "@/Schema/registerSchema";
@@ -15,8 +15,8 @@ export const registerForm = async (values: z.infer<typeof registerSchema>) => {
     return { error: "Invalid fields!" };
   }
   const { email, password, name } = values;
-  const salt = bcrypt.genSaltSync(10);
-  const hash = bcrypt.hashSync(password, salt);
+  const salt = await bcrypt.genSaltSync(10);
+  const hash = await bcrypt.hashSync(password, salt);
 
   const isUser = await getUserByEmail(email);
 

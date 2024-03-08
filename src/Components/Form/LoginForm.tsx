@@ -41,8 +41,8 @@ const LoginForm = () => {
     startTransition(() => {
       login(data)
         .then((val) => {
-          setError(val.error);
-          setSuccess(val.success);
+          setError(val?.error);
+          setSuccess(val?.success);
         })
     })
     // router.push('/');
